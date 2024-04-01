@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
+project(MyClass)
+set(CMAKE_CXX_STANDARD 20)  
+add_executable(MyClass main.cpp)
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "MyClass")
