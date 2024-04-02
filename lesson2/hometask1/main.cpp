@@ -1,4 +1,12 @@
 #include <iostream>
+#include <stdexcept>
+
+class NullPointerException : public std::runtime_error
+{
+public:
+    NullPointerException(const std::string &message)
+        : std::runtime_error(message) {}
+};
 
 template <typename T>
 class mySharedPtr
@@ -34,6 +42,7 @@ public:
             {
                 delete ptr;
                 delete ref_count;
+                ptr = nullptr;
             }
 
             ptr = otherPtr.ptr;
@@ -45,11 +54,15 @@ public:
 
     T &operator*() const
     {
+        if (ptr == nullptr)
+            throw std::runtime_error("Dereferencing null pointer");
         return *ptr;
     }
 
     T *operator->() const
     {
+        if (ptr == nullptr)
+            throw NullPointerException("Accessing null pointer");
         return ptr;
     }
 
@@ -76,7 +89,7 @@ int main()
     mySharedPtr<std::string> p4(new std::string("Hello"));
     std::cout << "p4: " << *p4 << ", base_count: " << p4.base_count() << std::endl;
 
-    mySharedPtr<std::string> p5=p4;
+    mySharedPtr<std::string> p5 = p4;
     std::cout << "p5: after assignment: " << *p5 << ", base_count: " << p5.base_count() << std::endl;
 
     struct MyClass
@@ -90,8 +103,28 @@ int main()
     mySharedPtr<double> p7(new double(3.14));
     std::cout << "p7: " << *p7 << ", base_count: " << p7.base_count() << std::endl;
 
-    mySharedPtr<double> p8=p7;
+    mySharedPtr<double> p8 = p7;
     std::cout << "p8: after assignment: " << *p8 << ", base_count: " << p8.base_count() << std::endl;
+
+    try
+    {
+        mySharedPtr<int> p9;
+        std::cout << "p9: " << *p9 << ", base_count: " << p9.base_count() << std::endl;
+    }
+    catch (const std::runtime_error &e)
+    {
+        std::cerr << "Exception caught: " << e.what() << std::endl;
+    }
+
+    try
+    {
+        mySharedPtr<std::string> pNull;
+        pNull->size();
+    }
+    catch (const std::runtime_error &e)
+    {
+        std::cerr << "NullPointerException caught: " << e.what() << std::endl;
+    }
 
     return 0;
 }
